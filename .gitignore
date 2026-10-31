@@ -32,13 +32,11 @@ release/
 out/
 
 # Local files
-local database files
 *.db
 *.sqlite
 *.sqlite3
 logs/
 *.log
-temporary files
 *.tmp
 *.temp
 
