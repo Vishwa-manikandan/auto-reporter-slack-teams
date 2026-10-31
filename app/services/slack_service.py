@@ -167,3 +167,18 @@ class SlackService:
                 await self.client.session.close()
         except Exception:
             pass
+
+
+
+class SlackServiceFactory:
+    @staticmethod
+    def from_workspace(workspace, encryption_service=None):
+        from app.services.encryption_service import EncryptionService
+        if not workspace or not workspace.access_token:
+            raise SlackAuthError("Workspace has no access token")
+        try:
+            enc = encryption_service or EncryptionService()
+            decrypted = enc.decrypt(workspace.access_token)
+        except Exception as e:
+            raise SlackAuthError(f"Failed to decrypt workspace token: {str(e)}")
+        return SlackService(token=decrypted)

@@ -43,3 +43,15 @@ async def shutdown_event():
         pass
     except Exception:
         pass
+
+
+
+@app.on_event("startup")
+async def startup_event():
+    try:
+        from app.db.session import engine
+        from app.db.session import Base
+        import app.models  # ensure models are imported
+        Base.metadata.create_all(bind=engine)
+    except Exception:
+        pass
