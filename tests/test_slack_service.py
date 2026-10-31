@@ -182,3 +182,26 @@ async def test_missing_token_error():
             SlackService()
     finally:
         config.settings.SLACK_BOT_TOKEN = original
+
+
+@pytest.mark.asyncio
+async def test_test_auth_timeout_behavior():
+    with patch("app.services.slack_service.AsyncWebClient") as mock_client_cls:
+        mock_client = AsyncMock()
+        mock_client_cls.return_value = mock_client
+        mock_client.auth_test.side_effect = Exception("Request timed out")
+        service = SlackService(token="xoxb-test")
+        with pytest.raises(SlackServiceError):
+            await service.test_auth()
+
+
+@pytest.mark.asyncio
+async def test_slack_service_close():
+    with patch("app.services.slack_service.AsyncWebClient") as mock_client_cls:
+        mock_client = AsyncMock()
+        mock_client_cls.return_value = mock_client
+        mock_session = AsyncMock()
+        mock_client.session = mock_session
+        service = SlackService(token="xoxb-test")
+        await service.close()
+        mock_session.close.assert_called_once()

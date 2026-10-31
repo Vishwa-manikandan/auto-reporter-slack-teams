@@ -152,3 +152,10 @@ class SlackService:
                     threads[thread_ts] = []
                 threads[thread_ts].append(msg)
         return threads
+
+    async def close(self):
+        try:
+            if hasattr(self.client, "session") and self.client.session:
+                await self.client.session.close()
+        except Exception:
+            pass
