@@ -15,6 +15,12 @@ class Settings(BaseSettings):
     SLACK_BOT_TOKEN: str = ""
     SLACK_CHANNEL_ID: str = ""
     SLACK_API_TIMEOUT: float = 30.0
+    SLACK_REDIRECT_URI: str = ""
+    SLACK_SCOPES: str = "channels:read,groups:read,chat:write,users:read"
+
+    # OAuth
+    TOKEN_ENCRYPTION_KEY: str = ""
+    OAUTH_STATE_TTL_SECONDS: int = 600
 
     # AI
     AI_PROVIDER: str = "mock"
