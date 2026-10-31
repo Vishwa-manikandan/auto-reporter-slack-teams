@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, text, inspect
 from sqlalchemy.orm import sessionmaker
 from unittest.mock import MagicMock, patch
 
@@ -23,22 +23,27 @@ def test_session_cleanup(mock_session_local):
     db = next(db_gen)
     assert db == mock_session
     try:
-        db_gen.close()
-    except Exception:
-        raise
+        next(db_gen)
+    except StopIteration:
+        pass
     mock_session.close.assert_called_once()
 
 
 def test_in_memory_db():
     engine_test = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
-    Base.metadata.create_all(bind=engine_test)
-    inspector_tables = engine_test.dialect.get_table_names(engine_test.connect())
-    assert len(inspector_tables) > 0
-    SessionLocalTest = sessionmaker(bind=engine_test)
-    db = SessionLocalTest()
-    user = User(slack_user_id="U_TEST", name="Test")
-    db.add(user)
-    db.commit()
-    assert db.query(User).count() == 1
-    db.close()
-    engine_test.dispose()
+    try:
+        Base.metadata.create_all(bind=engine_test)
+        inspector = inspect(engine_test)
+        table_names = inspector.get_table_names()
+        assert len(table_names) > 0
+        SessionLocalTest = sessionmaker(bind=engine_test)
+        db = SessionLocalTest()
+        try:
+            user = User(slack_user_id="U_TEST", name="Test")
+            db.add(user)
+            db.commit()
+            assert db.query(User).count() == 1
+        finally:
+            db.close()
+    finally:
+        engine_test.dispose()
