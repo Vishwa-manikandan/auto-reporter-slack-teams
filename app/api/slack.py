@@ -69,4 +69,12 @@ async def list_channels(workspace_id: int = None, service: SlackService = Depend
 
 @router.post("/channels/select")
 async def select_channels(channel_ids: list[int], db: Session = Depends(get_db)):
-    return {"message": "Channels selected", "count": len(channel_ids)}
+    from app.models.channel import Channel
+    count = 0
+    for cid in channel_ids:
+        channel = db.query(Channel).filter(Channel.id == cid).first()
+        if channel:
+            channel.is_selected = True
+            count += 1
+    db.commit()
+    return {"message": "Channels selected", "count": count}
