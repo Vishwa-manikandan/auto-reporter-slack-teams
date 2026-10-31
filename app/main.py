@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.api import api_router
+from app.db.session import check_db_connection
 
 app = FastAPI(
     title="Auto-Reporter API",
@@ -28,4 +29,7 @@ async def root():
 
 @app.get("/health")
 async def health():
-    return {"status": "healthy", "database": "ok"}
+    db_ok = check_db_connection()
+    if db_ok:
+        return {"status": "healthy", "database": "ok"}
+    return {"status": "unhealthy", "database": "error"}
