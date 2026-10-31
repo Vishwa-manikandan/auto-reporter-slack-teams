@@ -1,0 +1,17 @@
+{
+  "name": "@auto-reporter/slack-plugin",
+  "version": "0.1.0",
+  "description": "Slack app plugin for Auto-Reporter",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "dependencies": {
+    "@slack/bolt": "^3.13.0",
+    "dotenv": "^16.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}

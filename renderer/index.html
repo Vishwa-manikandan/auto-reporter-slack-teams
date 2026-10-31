@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto-Reporter for Slack Teams</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Auto-Reporter for Slack Teams</h1>
+            <p class="subtitle">AI-driven status reports from Slack conversations</p>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+            <button class="tab-btn" data-tab="settings">Settings</button>
+            <button class="tab-btn" data-tab="logs">Logs</button>
+        </nav>
+
+        <main>
+            <!-- Dashboard Tab -->
+            <section id="dashboard" class="tab-content active">
+                <div class="card">
+                    <h2>Generate Report</h2>
+                    <p>Generate an on-demand status report from your Slack channel</p>
+                    <button id="generateBtn" class="btn btn-primary">Generate Report Now</button>
+                    <div id="reportStatus" class="status"></div>
+                </div>
+
+                <div class="card">
+                    <h2>Last Run</h2>
+                    <div id="lastRun" class="info-box">
+                        <p class="muted">No reports generated yet</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Report Preview</h2>
+                    <div id="reportPreview" class="report-preview">
+                        <p class="muted">Generate a report to see preview</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Tab -->
+            <section id="settings" class="tab-content">
+                <div class="card">
+                    <h2>Slack Configuration</h2>
+                    <div class="form-group">
+                        <label for="slackToken">Slack Bot Token</label>
+                        <input type="password" id="slackToken" placeholder="xoxb-...">
+                        <small>Bot token from your Slack app</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="channelId">Channel ID</label>
+                        <input type="text" id="channelId" placeholder="C1234567890">
+                        <small>Slack channel ID to monitor</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="channelName">Channel Name</label>
+                        <input type="text" id="channelName" placeholder="engineering">
+                        <small>Display name for reports</small>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Scheduling</h2>
+                    <div class="form-group checkbox">
+                        <label>
+                            <input type="checkbox" id="scheduleEnabled">
+                            Enable daily automated reports
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label for="scheduleTime">Report Time (UTC)</label>
+                        <input type="time" id="scheduleTime" value="08:00">
+                    </div>
+                </div>
+
+                <button id="saveSettingsBtn" class="btn btn-primary">Save Settings</button>
+                <div id="settingsStatus" class="status"></div>
+            </section>
+
+            <!-- Logs Tab -->
+            <section id="logs" class="tab-content">
+                <div class="card">
+                    <h2>Activity Logs</h2>
+                    <div id="logsList" class="logs-list">
+                        <p class="muted">No logs yet</p>
+                    </div>
+                    <button id="clearLogsBtn" class="btn btn-secondary">Clear Logs</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+{
+  "name": "auto-reporter-slack-teams",
+  "version": "0.1.0",
+  "description": "Auto-Reporter for Slack Teams - Plugin, Desktop App, and Mobile App",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "core:test": "cd packages/core && python -m pytest",
+    "slack:dev": "cd packages/slack-plugin && npm run dev",
+    "desktop:start": "cd packages/desktop && npm start",
+    "mobile:start": "cd packages/mobile && npm start",
+    "install:all": "npm install && pip install -r packages/core/requirements.txt"
+  },
+  "keywords": [
+    "slack",
+    "reporter",
+    "automation",
+    "plugin",
+    "mobile"
+  ],
+  "author": "",
+  "license": "MIT"
+}

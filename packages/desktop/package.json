@@ -1,0 +1,30 @@
+{
+  "name": "auto-reporter-slack",
+  "version": "0.1.0",
+  "description": "Auto-Reporter for Slack Teams - Desktop App",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "concurrently \"npm run start:renderer\" \"wait-on http://localhost:3000 && electron .\"",
+    "start:renderer": "cd renderer && npm start",
+    "build": "electron-builder",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "keywords": [
+    "slack",
+    "reporter",
+    "automation"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.0",
+    "electron": "^25.0.0",
+    "electron-builder": "^24.4.0",
+    "wait-on": "^7.0.1"
+  },
+  "dependencies": {
+    "electron-store": "^8.1.0",
+    "node-cron": "^3.0.2"
+  }
+}
