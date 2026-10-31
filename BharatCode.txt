@@ -1,0 +1,6 @@
+BharatCode - AI Model Integration
+
+Auto-Reporter uses BharatCode for intelligent message summarization and action item extraction.
+Model: BharatCode (local inference)
+Integration: app/services/ai_provider.py
+Status: Configured with mock fallback for development
