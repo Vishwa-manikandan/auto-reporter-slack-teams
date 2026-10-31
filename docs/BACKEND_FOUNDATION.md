@@ -14,10 +14,16 @@
 
 ## Health Check
 - `GET /health` performs actual DB connectivity test
-- Returns `healthy` with `database: ok` on success
-- Returns `unhealthy` with `database: error` on failure
+- Returns `healthy` with `database: ok` on success (HTTP 200)
+- Returns `unhealthy` with `database: error` on failure (HTTP 503)
+- Database failures are mocked in tests without affecting developer database
 
 ## Testing
 - Use `tests/` with pytest
 - In-memory SQLite for isolated tests
-- All existing tests pass
+- **Verified locally:** `python -m pytest -q` → 9 passed in 1.25s (2025-10-31)
+- Test coverage includes configuration, database, models, and API endpoints
+- GitHub Actions status not verified in this pass
+
+## Notes
+- Tests pass locally as verified above; continuous integration status not claimed.

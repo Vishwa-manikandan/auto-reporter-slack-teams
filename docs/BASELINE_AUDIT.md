@@ -1,77 +1,71 @@
 # Baseline Audit - Auto-Reporter for Slack Teams
 
-**Date:** 2026-10-31  
+**Audit Date:** 2025-10-31  
 **Branch:** refactor/architecture-cleanup  
-**Base Commit:** ff14a87  
-**Audit Commit:** a94f017  
+**Commit:** a94f017  
+**Previous Audit Commit:** a94f017
 
-## 1. Environment
+## 1. Repository Structure
 
-| Component | Version/Status |
-|-----------|----------------|
-| Python | 3.14.7 |
-| Node.js | v24.21.0 |
-| FastAPI | 0.104.1 (from requirements.txt) |
-| pytest | 9.1.1 |
-| SQLAlchemy | 2.1.6 |
-| slack-sdk | 3.26.0 |
+The repository contains multiple implementations across different locations:
 
-**Dependencies:** All required dependencies installed. Tests run successfully.
+### Core Components
+- `app/` - FastAPI backend (main application)
+- `autoreporter/` - Legacy CLI implementation  
+- `packages/core/autoreporter/` - Core package (duplicate of autoreporter/)
+- `packages/desktop/` - Electron desktop app
+- `packages/mobile/` - Mobile app starter
+- `packages/slack-plugin/` - Slack plugin/Bolt app
+- `electron/` - Root-level Electron files (duplicate structure)
+- `renderer/` - Root-level renderer files
+- `tests/` - Test suite
+- `docs/` - Documentation
 
-## 2. Repository Structure Inspection
+### Configuration & Deployment
+- `requirements.txt`, `setup.py`, `pyproject.toml` - Python configuration
+- `docker-compose.yml`, `Dockerfile` - Containerization
+- `package.json` files across packages - Node.js configuration
+- `.env.example` - Environment template
 
-### FastAPI Backend (`app/`)
-- **Status:** Implemented and functional
-- **Entry Point:** `app/main.py`
-- **Models:** 8 models (User, Workspace, Channel, Message, Thread, Report, ReportItem, SyncState)
-- **API Routes:** auth, slack, sync, reports
-- **Services:** slack_service, sync_service, report_generator, ai_provider
-- **Tests:** 3 tests passing
+## 2. Environment (Source Inspection)
+- Python environment: dependencies as specified in `requirements.txt`
+- Node.js: used for Electron/desktop packages
+- Dependencies installed state: **not verified by runtime inspection in this audit** (installation depends on local environment)
+- Setup instructions exist in README.md
 
-### CLI Implementation
-- **Root:** `autoreporter/` - CLI entry point at `__main__.py`, full implementation
-- **Core Package:** `packages/core/autoreporter/` - Identical implementation (duplicate)
-- **Status:** Both functional, root used by main package.json
-
-### Desktop Application
-- **Root:** `electron/main.js`, `renderer/` - Electron app with UI
-- **Packages:** `packages/desktop/` - Duplicate structure
-- **Features:** Settings, scheduling (cron), IPC, report generation
-- **Status:** Implemented but not fully integrated with backend
-
-### Slack Plugin
-- **Location:** `packages/slack-plugin/`
-- **Framework:** @slack/bolt
-- **Features:** Slash command `/autoreport`, app mentions
-- **Status:** Scaffolded, placeholder implementation
-
-### Mobile
-- **Location:** `packages/mobile/`
-- **Framework:** React Native/Expo
-- **Status:** Basic scaffold
+*Note: Environment versions and installation status were not executed/verified in this pass - source inspection only.*
 
 ## 3. Test Results
 
-| Test | Status | Notes |
-|------|--------|-------|
-| tests/test_api.py::test_root | PASSED | Returns correct API info |
-| tests/test_api.py::test_health | PASSED | Health check works |
-| tests/test_models.py::test_models_creation | PASSED | All 8 models can be created |
+Tests executed via `python -m pytest -q` on the current branch state: **9 passed in 1.25s** (all tests in the suite).
 
-**Total:** 3 passed, 0 failed, 0 skipped
+Executed tests:
+- tests/test_api.py::test_root - PASSED
+- tests/test_api.py::test_health - PASSED
+- tests/test_api.py::test_health_db_failure - PASSED
+- tests/test_config.py::test_settings_defaults - PASSED
+- tests/test_config.py::test_settings_env_override - PASSED
+- tests/test_db.py::test_sqlite_engine_initialization - PASSED
+- tests/test_db.py::test_session_cleanup - PASSED
+- tests/test_db.py::test_in_memory_db - PASSED
+- tests/test_models.py::test_models_creation - PASSED
+
+**Total:** 9 passed, 0 failed, 0 skipped
+
+*Distinction:* The above reflects tests that were actually executed. Tests that merely exist in the repository and were not run in this verification are not claimed as passing.
 
 ## 4. Feature Status
 
-| Feature | Implementation Status | Evidence | Recommended Action |
+| Feature | Implementation status | Evidence | Recommended action |
 |---------|----------------------|----------|-------------------|
-| FastAPI Root/Health | Implemented and verified | tests pass | Keep as-is |
+| FastAPI Root/Health | Implemented and verified | Real DB health check in app/main.py; tests pass | Keep as-is |
 | Database Models | Implemented and verified | 8 models, test passes | Keep as-is |
 | Auth Endpoints | Placeholder | app/api/auth.py returns mocks | Implement OAuth in future |
 | Slack Endpoints | Placeholder | app/api/slack.py returns empty lists | Implement with SlackService |
 | Sync Endpoints | Placeholder | app/api/sync.py returns mocks | Implement with SyncService |
 | Reports Endpoints | Partially implemented | Uses ReportGenerator | Connect to DB/models |
 | AI Provider | Mock implemented | MockAIProvider returns static text | Integrate BharatCode |
-| CLI (autoreporter) | Implemented and verified | Full functionality with Slack API | Consider consolidating |
+| CLI (autoreporter) | Implemented | Full functionality with Slack API | Consider consolidating |
 | Desktop App (Electron) | Implemented | Full UI, scheduling | Integrate with backend |
 | Slack Plugin | Scaffolded | Basic Bolt setup | Expand implementation |
 | Mobile App | Scaffolded | Basic UI | Expand implementation |
@@ -89,7 +83,7 @@
 | Duplicates | Medium | Multiple implementations of same code increase maintenance burden |
 | Placeholder APIs | Medium | Most API endpoints return mocks, not functional |
 | Security | Medium | Credentials in .env (removed from tracking), Node integration enabled |
-| Dependencies | Low | Python 3.14 newer than some packages tested against |
+| Dependencies | Low | Dependency versions need compatibility verification per environment |
 | Bytecode | Resolved | Removed 28 tracked .pyc files |
 
 ## 7. Migration Priorities

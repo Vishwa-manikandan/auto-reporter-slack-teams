@@ -17,6 +17,3 @@ def test_settings_env_override(monkeypatch):
     assert s.APP_NAME == "TestApp"
     assert s.DEBUG is True
     assert s.DATABASE_URL == "sqlite:///./test.db"
-    monkeypatch.delenv("APP_NAME", raising=False)
-    monkeypatch.delenv("DEBUG", raising=False)
-    monkeypatch.delenv("DATABASE_URL", raising=False)

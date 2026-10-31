@@ -1,9 +1,10 @@
+import pytest
 from sqlalchemy import create_engine, text, inspect
 from sqlalchemy.orm import sessionmaker
 from unittest.mock import MagicMock, patch
 
 from app.db.session import Base, engine
-from app.models import User
+from app.models import User, Workspace, Channel, Message, Thread, Report, ReportItem, SyncState
 
 
 def test_sqlite_engine_initialization():
@@ -23,10 +24,10 @@ def test_session_cleanup(mock_session_local):
     db = next(db_gen)
     assert db == mock_session
     try:
-        next(db_gen)
-    except StopIteration:
-        pass
-    mock_session.close.assert_called_once()
+        with pytest.raises(StopIteration):
+            next(db_gen)
+    finally:
+        mock_session.close.assert_called_once()
 
 
 def test_in_memory_db():
@@ -35,7 +36,8 @@ def test_in_memory_db():
         Base.metadata.create_all(bind=engine_test)
         inspector = inspect(engine_test)
         table_names = inspector.get_table_names()
-        assert len(table_names) > 0
+        expected_tables = {"users", "workspaces", "channels", "messages", "threads", "reports", "report_items", "sync_states"}
+        assert expected_tables.issubset(set(table_names))
         SessionLocalTest = sessionmaker(bind=engine_test)
         db = SessionLocalTest()
         try:
