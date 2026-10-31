@@ -37,20 +37,11 @@ The repository contains multiple implementations across different locations:
 
 ## 3. Test Results
 
-Tests executed via `python -m pytest -q` on the current branch state: **9 passed in 1.25s** (all tests in the suite).
+Tests executed via `python -m pytest -q` on the current branch state: **26 passed in 2.18s** (all tests in the suite).
 
-Executed tests:
-- tests/test_api.py::test_root - PASSED
-- tests/test_api.py::test_health - PASSED
-- tests/test_api.py::test_health_db_failure - PASSED
-- tests/test_config.py::test_settings_defaults - PASSED
-- tests/test_config.py::test_settings_env_override - PASSED
-- tests/test_db.py::test_sqlite_engine_initialization - PASSED
-- tests/test_db.py::test_session_cleanup - PASSED
-- tests/test_db.py::test_in_memory_db - PASSED
-- tests/test_models.py::test_models_creation - PASSED
+Executed tests include API, config, database, models, and Slack service/API tests.
 
-**Total:** 9 passed, 0 failed, 0 skipped
+**Total:** 26 passed, 0 failed, 0 skipped
 
 *Distinction:* The above reflects tests that were actually executed. Tests that merely exist in the repository and were not run in this verification are not claimed as passing.
 
@@ -61,7 +52,7 @@ Executed tests:
 | FastAPI Root/Health | Implemented and verified | Real DB health check in app/main.py; tests pass | Keep as-is |
 | Database Models | Implemented and verified | 8 models, test passes | Keep as-is |
 | Auth Endpoints | Placeholder | app/api/auth.py returns mocks | Implement OAuth in future |
-| Slack Endpoints | Placeholder | app/api/slack.py returns empty lists | Implement with SlackService |
+| Slack Endpoints | Implemented (foundation) | app/api/slack.py connected to SlackService; tests pass | Extend with OAuth/persistence in future |
 | Sync Endpoints | Placeholder | app/api/sync.py returns mocks | Implement with SyncService |
 | Reports Endpoints | Partially implemented | Uses ReportGenerator | Connect to DB/models |
 | AI Provider | Mock implemented | MockAIProvider returns static text | Integrate BharatCode |

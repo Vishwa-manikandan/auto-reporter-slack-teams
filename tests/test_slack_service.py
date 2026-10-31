@@ -148,3 +148,37 @@ async def test_get_workspace_info():
         info = await service.get_workspace_info()
         assert info["team_id"] == "T123"
         assert info["connected"] is True
+
+
+@pytest.mark.asyncio
+async def test_test_auth_network_error():
+    with patch("app.services.slack_service.AsyncWebClient") as mock_client_cls:
+        mock_client = AsyncMock()
+        mock_client_cls.return_value = mock_client
+        mock_client.auth_test.side_effect = Exception("network error")
+        service = SlackService(token="xoxb-test")
+        with pytest.raises(SlackServiceError):
+            await service.test_auth()
+
+
+@pytest.mark.asyncio
+async def test_get_channels_network_error():
+    with patch("app.services.slack_service.AsyncWebClient") as mock_client_cls:
+        mock_client = AsyncMock()
+        mock_client_cls.return_value = mock_client
+        mock_client.conversations_list.side_effect = Exception("timeout")
+        service = SlackService(token="xoxb-test")
+        with pytest.raises(SlackServiceError):
+            await service.get_channels()
+
+
+@pytest.mark.asyncio
+async def test_missing_token_error():
+    from app.core import config
+    original = config.settings.SLACK_BOT_TOKEN
+    try:
+        config.settings.SLACK_BOT_TOKEN = ""
+        with pytest.raises(SlackAuthError):
+            SlackService()
+    finally:
+        config.settings.SLACK_BOT_TOKEN = original

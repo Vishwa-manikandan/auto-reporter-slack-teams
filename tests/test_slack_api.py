@@ -46,3 +46,33 @@ def test_slack_channels(mock_slack_service_cls):
     assert response.status_code == 200
     data = response.json()
     assert len(data["channels"]) == 1
+
+
+@patch("app.api.slack.SlackService")
+def test_slack_status_forbidden(mock_slack_service_cls):
+    from app.services.slack_service import SlackPermissionError
+    mock_service = AsyncMock()
+    mock_slack_service_cls.return_value = mock_service
+    mock_service.get_workspace_info.side_effect = SlackPermissionError("missing_scope")
+    response = client.get("/api/v1/slack/status")
+    assert response.status_code == 403
+
+
+@patch("app.api.slack.SlackService")
+def test_slack_status_ratelimited(mock_slack_service_cls):
+    from app.services.slack_service import SlackRateLimitError
+    mock_service = AsyncMock()
+    mock_slack_service_cls.return_value = mock_service
+    mock_service.get_workspace_info.side_effect = SlackRateLimitError("ratelimited")
+    response = client.get("/api/v1/slack/status")
+    assert response.status_code == 429
+
+
+@patch("app.api.slack.SlackService")
+def test_slack_status_bad_gateway(mock_slack_service_cls):
+    from app.services.slack_service import SlackServiceError
+    mock_service = AsyncMock()
+    mock_slack_service_cls.return_value = mock_service
+    mock_service.get_workspace_info.side_effect = SlackServiceError("error")
+    response = client.get("/api/v1/slack/status")
+    assert response.status_code == 502
