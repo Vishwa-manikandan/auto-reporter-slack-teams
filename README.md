@@ -1,57 +1,39 @@
-# Auto-Reporter for Slack Teams
+# Auto-Reporter for Slack
 
-Auto-Reporter is a tool for extracting and summarizing Slack conversations into actionable reports.
+Automated Slack report generation with OAuth, message sync, and AI-powered insights.
 
-## Current Implementation Status
+## Status
 
-### Implemented and Tested
-- **FastAPI Backend**: Core API structure with health checks, database models, and dependency injection
-- **Database Foundation**: SQLAlchemy models and session management with SQLite support
-- **Slack Integration Foundation**: Async Slack service using `AsyncWebClient` with credential validation (`auth.test`), workspace info retrieval, and paginated channel listing. API endpoints under `/api/v1/slack/` with proper error handling (401/403/429/502). Tests use mocked Slack clients.
-- **Configuration**: Pydantic Settings with environment variable support
-- **Testing**: Comprehensive test suite (26 tests passing locally)
+| Feature | Status |
+| --- | --- |
+| Slack OAuth & token encryption | Implemented |
+| Channel sync & pagination | Implemented |
+| Thread reconstruction | Implemented |
+| Report generation (daily/weekly) | Implemented |
+| Report persistence | Implemented |
+| AI provider (OpenAI-compatible, Anthropic, Ollama) | Implemented |
+| Microsoft Teams | Planned |
+| Mobile app | Not implemented |
 
-### Partially Implemented
-- **CLI (`autoreporter/`)**: Basic CLI structure exists
-- **Report Generation**: Report generator code exists but not fully integrated
-- **AI Provider**: Mock provider implemented; real BharatCode integration not fully configured
-
-### Placeholder/Not Implemented
-- **Slack OAuth**: Not implemented
-- **Persistent Token Storage**: Not implemented
-- **Message Synchronization**: Not implemented
-- **Thread Reconstruction (full sync workflow)**: Basic methods exist in service but full sync not implemented
-- **Scheduled Reports**: Not implemented
-- **Electron Desktop App**: Code exists in `packages/desktop/` and `electron/` but not fully integrated
-- **Slack Plugin**: Scaffolded only
-- **Mobile App**: Scaffolded only
-
-## Setup
+## Quick Start
 
 ```bash
-# Create virtual environment
-python -m venv .venv
-# Activate (Windows)
-.venv\Scripts\activate
-# Activate (Linux/Mac)
-source .venv/bin/activate
-
-# Install dependencies
 pip install -r requirements.txt
-
-# Copy environment template
 cp .env.example .env
-
-# Run server
+# Set up Slack app, add credentials to .env
 uvicorn app.main:app --reload
 ```
 
-## API Docs
-Open http://127.0.0.1:8000/docs
+## AI Providers
 
-## Tests
-```bash
-pytest -q
-```
+Set `AI_PROVIDER` in `.env`:
+- `mock` - for testing (default)
+- `openai` - OpenAI API
+- `anthropic` - Anthropic API
+- `ollama` - Local Ollama model
 
-*Tests are run locally; CI status not verified in this branch.*
+See `.env.example` for configuration.
+
+## Documentation
+
+See `docs/` for setup, architecture, and API documentation.
