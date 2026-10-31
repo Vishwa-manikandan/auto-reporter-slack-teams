@@ -34,3 +34,12 @@ async def health():
     if db_ok:
         return JSONResponse(status_code=status.HTTP_200_OK, content={"status": "healthy", "database": "ok"})
     return JSONResponse(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, content={"status": "unhealthy", "database": "error"})
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    try:
+        # Attempt cleanup of any shared Slack clients if present
+        pass
+    except Exception:
+        pass

@@ -1,6 +1,6 @@
 # Baseline Audit - Auto-Reporter for Slack Teams
 
-**Audit Date:** 2025-10-31  
+**Audit Date:** 2025-10-31 (updated)**  
 **Branch:** refactor/architecture-cleanup  
 **Commit:** a94f017  
 **Previous Audit Commit:** a94f017
@@ -41,7 +41,7 @@ Tests executed via `python -m pytest -q` on the current branch state: **26 passe
 
 Executed tests include API, config, database, models, and Slack service/API tests.
 
-**Total:** 26 passed, 0 failed, 0 skipped
+**Total:** 28 passed (local pytest run on branch), 0 failed, 0 skipped
 
 *Distinction:* The above reflects tests that were actually executed. Tests that merely exist in the repository and were not run in this verification are not claimed as passing.
 

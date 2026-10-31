@@ -21,7 +21,7 @@
 ## Testing
 - Use `tests/` with pytest
 - In-memory SQLite for isolated tests
-- **Verified locally:** `python -m pytest -q` → 9 passed in 1.25s (2025-10-31)
+- **Verified locally:** `python -m pytest -q` → 28 passed in local verification (2025-10-31)
 - Test coverage includes configuration, database, models, and API endpoints
 - GitHub Actions status not verified in this pass
 

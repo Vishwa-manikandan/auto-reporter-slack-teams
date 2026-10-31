@@ -56,6 +56,8 @@ class SlackService:
                 raise SlackRateLimitError("Slack API rate limited", error=error, response=e.response)
             raise SlackServiceError(f"Slack API error: {error}", error=error, response=e.response)
         except Exception as e:
+            if isinstance(e, TimeoutError) or "timeout" in str(e).lower():
+                raise SlackServiceError(f"Slack API request timed out: {str(e)}")
             raise SlackServiceError(f"Slack API request failed: {str(e)}")
 
     async def get_workspace_info(self) -> Dict[str, Any]:
@@ -100,6 +102,8 @@ class SlackService:
                     raise SlackRateLimitError("Slack API rate limited", error=error, response=e.response)
                 raise SlackServiceError(f"Slack API error: {error}", error=error, response=e.response)
             except Exception as e:
+                if isinstance(e, TimeoutError) or "timeout" in str(e).lower():
+                    raise SlackServiceError(f"Slack API request timed out: {str(e)}")
                 raise SlackServiceError(f"Slack API request failed: {str(e)}")
 
         return channels
@@ -122,6 +126,8 @@ class SlackService:
                 raise SlackRateLimitError("Slack API rate limited", error=error, response=e.response)
             raise SlackServiceError(f"Slack API error: {error}", error=error, response=e.response)
         except Exception as e:
+            if isinstance(e, TimeoutError) or "timeout" in str(e).lower():
+                raise SlackServiceError(f"Slack API request timed out: {str(e)}")
             raise SlackServiceError(f"Slack API request failed: {str(e)}")
 
     async def get_thread_replies(self, channel_id: str, thread_ts: str) -> List[Dict[str, Any]]:
@@ -141,6 +147,8 @@ class SlackService:
                 raise SlackRateLimitError("Slack API rate limited", error=error, response=e.response)
             raise SlackServiceError(f"Slack API error: {error}", error=error, response=e.response)
         except Exception as e:
+            if isinstance(e, TimeoutError) or "timeout" in str(e).lower():
+                raise SlackServiceError(f"Slack API request timed out: {str(e)}")
             raise SlackServiceError(f"Slack API request failed: {str(e)}")
 
     async def reconstruct_threads(self, messages: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
