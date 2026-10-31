@@ -24,6 +24,12 @@ class Settings(BaseSettings):
 
     # AI
     AI_PROVIDER: str = "mock"
+    AI_API_KEY: str = ""
+    AI_MODEL: str = ""
+    AI_API_BASE_URL: str = ""
+    AI_REQUEST_TIMEOUT: float = 60.0
+    AI_MAX_OUTPUT_TOKENS: int = 1024
+    AI_RETRY_LIMIT: int = 2
     BHARATCODE_API_KEY: str = ""
 
     model_config = {"env_file": ".env", "extra": "ignore"}
