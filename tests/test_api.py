@@ -1,4 +1,6 @@
 from fastapi.testclient import TestClient
+from unittest.mock import patch
+
 from app.main import app
 
 client = TestClient(app)
@@ -18,3 +20,15 @@ def test_health():
     data = response.json()
     assert data["status"] == "healthy"
     assert data["database"] == "ok"
+
+
+@patch("app.main.check_db_connection")
+def test_health_db_failure(mock_check):
+    mock_check.return_value = False
+    response = client.get("/health")
+    assert response.status_code == 503
+    data = response.json()
+    assert data["status"] == "unhealthy"
+    assert data["database"] == "error"
+    assert "credentials" not in str(data).lower()
+    assert "exception" not in str(data).lower()

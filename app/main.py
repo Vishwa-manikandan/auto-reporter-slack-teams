@@ -1,5 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.core.config import settings
 from app.api import api_router
@@ -31,5 +32,5 @@ async def root():
 async def health():
     db_ok = check_db_connection()
     if db_ok:
-        return {"status": "healthy", "database": "ok"}
-    return {"status": "unhealthy", "database": "error"}
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"status": "healthy", "database": "ok"})
+    return JSONResponse(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, content={"status": "unhealthy", "database": "error"})
