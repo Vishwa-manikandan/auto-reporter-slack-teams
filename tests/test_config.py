@@ -1,9 +1,8 @@
-import os
 from app.core.config import Settings
 
 
 def test_settings_defaults():
-    s = Settings()
+    s = Settings(_env_file=None)
     assert s.APP_NAME == "Auto-Reporter"
     assert s.DEBUG is False
     assert s.DATABASE_URL == "sqlite:///./autoreporter.db"
@@ -14,7 +13,10 @@ def test_settings_env_override(monkeypatch):
     monkeypatch.setenv("APP_NAME", "TestApp")
     monkeypatch.setenv("DEBUG", "true")
     monkeypatch.setenv("DATABASE_URL", "sqlite:///./test.db")
-    s = Settings()
+    s = Settings(_env_file=None)
     assert s.APP_NAME == "TestApp"
     assert s.DEBUG is True
     assert s.DATABASE_URL == "sqlite:///./test.db"
+    monkeypatch.delenv("APP_NAME", raising=False)
+    monkeypatch.delenv("DEBUG", raising=False)
+    monkeypatch.delenv("DATABASE_URL", raising=False)
