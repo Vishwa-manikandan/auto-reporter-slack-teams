@@ -1,0 +1,6 @@
+[
+  {"ts": "1698768000.000100", "user": "alice", "text": "We need to fix the auth bug before release", "thread_ts": null},
+  {"ts": "1698768060.000200", "user": "bob", "text": "I'll look into it today", "thread_ts": "1698768000.000100"},
+  {"ts": "1698768120.000300", "user": "alice", "text": "There's a blocker - API returns 500", "thread_ts": null},
+  {"ts": "1698768180.000400", "user": "carol", "text": "I'll check the logs", "thread_ts": "1698768120.000300"}
+]

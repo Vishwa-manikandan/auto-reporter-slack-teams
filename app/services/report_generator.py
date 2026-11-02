@@ -1,65 +1,84 @@
-from typing import List, Dict, Any
+import json
 from datetime import datetime, timedelta
-from app.services.ai_provider import get_ai_provider
+from typing import Any, Dict, List, Optional
+
+from sqlalchemy.orm import Session
+
+from app.models.message import Message
+from app.models.channel import Channel
+from app.models.workspace import Workspace
+from app.services.ai_provider import AIProviderFactory, AIProviderError
 
 
 class ReportGenerator:
-    def __init__(self):
-        self.ai_provider = get_ai_provider()
-    
-    async def generate_daily_report(self, messages: List[Dict[str, Any]], channel_name: str = "") -> Dict[str, Any]:
-        summary = await self.ai_provider.summarize_messages(messages)
-        action_items = await self.ai_provider.extract_action_items(messages)
-        
-        # Keyword detection
-        keywords_found = self._detect_keywords(messages)
-        
-        report_content = f"""# Daily Status Report - {datetime.now().strftime('%Y-%m-%d')}
+    def __init__(self, db: Session, provider: Optional[str] = None):
+        self.db = db
+        self.ai = AIProviderFactory.create(provider)
 
-## Summary
-{summary}
-
-## Blocked Issues
-{self._format_items(keywords_found.get('blocked', []))}
-
-## Bugs
-{self._format_items(keywords_found.get('bugs', []))}
-
-## Action Items
-{self._format_items(action_items)}
-
-## Feature Requests
-{self._format_items(keywords_found.get('features', []))}
-"""
-        
-        return {
-            "title": f"Daily Report - {datetime.now().strftime('%Y-%m-%d')}",
-            "content": report_content,
-            "type": "daily",
-            "items": keywords_found
-        }
-    
-    def _detect_keywords(self, messages: List[Dict[str, Any]]) -> Dict[str, List]:
-        import re
-        result = {"blocked": [], "bugs": [], "features": [], "other": []}
-        
-        patterns = {
-            "blocked": [r'\bblock(ed|ing)?\b', r'\bstuck\b', r'\bwaiting on\b'],
-            "bugs": [r'\bbug\b', r'\bcrash\b', r'\berror\b', r'\bbroken\b'],
-            "features": [r'\bfeature request\b', r'\benhance\b', r'\badd\b.*feature\b']
-        }
-        
-        for msg in messages:
-            text = msg.get("text", "")
-            for category, pats in patterns.items():
-                for pattern in pats:
-                    if re.search(pattern, text, re.IGNORECASE):
-                        result[category].append({"text": text, "ts": msg.get("ts")})
-                        break
-        
+    def prepare_messages_for_analysis(self, channel_id: int, start_time: datetime, end_time: datetime) -> List[Dict[str, Any]]:
+        messages = (
+            self.db.query(Message)
+            .filter(Message.channel_id == channel_id)
+            .filter(Message.ts >= start_time.timestamp() if False else True)  # flexible
+            .order_by(Message.ts.asc())
+            .all()
+        )
+        # Filter by time if ts is datetime-like
+        result = []
+        for m in messages:
+            try:
+                m_time = datetime.fromtimestamp(float(m.ts)) if hasattr(m.ts, '__float__') or isinstance(m.ts, (int, float, str)) and str(m.ts).replace('.', '').isdigit() else getattr(m, 'created_at', None)
+                if m_time and isinstance(m_time, datetime):
+                    if m_time < start_time or m_time >= end_time:
+                        continue
+            except Exception:
+                pass
+            result.append({
+                "id": m.slack_message_id or getattr(m, 'id'),
+                "ts": m.ts,
+                "user_id": m.user_id,
+                "text": m.text or "",
+                "thread_ts": m.thread_ts,
+                "channel_id": m.channel_id,
+            })
         return result
-    
-    def _format_items(self, items: List[Dict]) -> str:
-        if not items:
-            return "- None\n"
-        return "\n".join(f"- {item.get('text', '')[:100]}" for item in items) + "\n"
+
+    async def generate_daily_report(self, channel_id: int) -> Dict[str, Any]:
+        end_time = datetime.utcnow()
+        start_time = end_time - timedelta(days=1)
+        messages = self.prepare_messages_for_analysis(channel_id, start_time, end_time)
+        prompt = """You are an expert Slack report generator. Analyze the messages and return a JSON object with keys: executive_summary, decisions, action_items, blockers, project_updates, important_discussions, follow_ups, source_references. Only include items with evidence from messages. Do not invent facts."""
+        try:
+            content = await self.ai.generate(messages, prompt)
+            data = json.loads(content)
+            return {
+                "type": "daily",
+                "period": {"start": start_time.isoformat(), "end": end_time.isoformat()},
+                "channel_id": channel_id,
+                "message_count": len(messages),
+                **data
+            }
+        except AIProviderError as e:
+            raise Exception(f"AI generation failed: {str(e)}")
+        except Exception as e:
+            raise Exception(f"Report generation failed: {str(e)}")
+
+    async def generate_weekly_report(self, channel_id: int) -> Dict[str, Any]:
+        end_time = datetime.utcnow()
+        start_time = end_time - timedelta(days=7)
+        messages = self.prepare_messages_for_analysis(channel_id, start_time, end_time)
+        prompt = """You are an expert Slack report generator. Analyze messages from the past week and return a JSON object with keys: executive_summary, decisions, action_items, blockers, project_updates, important_discussions, follow_ups, source_references. Focus on themes and trends. Only include items with evidence."""
+        try:
+            content = await self.ai.generate(messages, prompt)
+            data = json.loads(content)
+            return {
+                "type": "weekly",
+                "period": {"start": start_time.isoformat(), "end": end_time.isoformat()},
+                "channel_id": channel_id,
+                "message_count": len(messages),
+                **data
+            }
+        except AIProviderError as e:
+            raise Exception(f"AI generation failed: {str(e)}")
+        except Exception as e:
+            raise Exception(f"Report generation failed: {str(e)}")

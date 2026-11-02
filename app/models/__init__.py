@@ -9,3 +9,5 @@ from app.models.report_item import ReportItem
 from app.models.sync_state import SyncState
 
 __all__ = ["Base", "User", "Workspace", "Channel", "Message", "Thread", "Report", "ReportItem", "SyncState"]
+
+from app.models.oauth_state import OAuthState

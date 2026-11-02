@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto-Reporter</title>
+    <style>
+        :root {
+            --bg: #ffffff;
+            --fg: #111111;
+            --muted: #666666;
+            --border: #dddddd;
+            --panel: #fafafa;
+            --accent: #2563eb;
+            --accent-fg: #ffffff;
+            --error: #dc2626;
+            --success: #16a34a;
+            --warning: #d97706;
+            --highlight: #fbbf24;
+            --done: #9ca3af;
+        }
+
+        [data-theme="dark"] {
+            --bg: #0f0f0f;
+            --fg: #e5e5e5;
+            --muted: #a3a3a3;
+            --border: #2a2a2a;
+            --panel: #151515;
+            --accent: #3b82f6;
+            --accent-fg: #ffffff;
+            --error: #ef4444;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --highlight: #fbbf24;
+            --done: #6b7280;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--fg);
+            min-width: 375px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        button, select, input {
+            font-family: inherit;
+            font-size: 0.875rem;
+        }
+
+        button {
+            background: var(--panel);
+            color: var(--fg);
+            border: 1px solid var(--border);
+            padding: 0.375rem 0.75rem;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        button:hover:not(:disabled) {
+            background: var(--border);
+        }
+
+        button:focus-visible, select:focus-visible, input:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--accent-fg);
+            border-color: var(--accent);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #1d4ed8;
+        }
+
+        [data-theme="dark"] .btn-primary:hover:not(:disabled) {
+            background: #2563eb;
+        }
+
+        .toggle-group {
+            display: flex;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .toggle-group button {
+            border: none;
+            border-radius: 0;
+            padding: 0.375rem 0.75rem;
+        }
+
+        .toggle-group button.active {
+            background: var(--accent);
+            color: var(--accent-fg);
+        }
+
+        .offline-label {
+            color: var(--warning);
+            font-size: 0.8125rem;
+            font-weight: 500;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 968px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 375px) {
+            .container {
+                padding: 0.5rem;
+            }
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        .panel {
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: var(--panel);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .panel-header h2 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .panel-body {
+            padding: 1rem;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .thread-selector {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .message {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            background: var(--bg);
+        }
+
+        .message.highlight {
+            background: rgba(251, 191, 36, 0.2);
+            border-color: var(--highlight);
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .message-user {
+            font-weight: 600;
+        }
+
+        .message-time {
+            color: var(--muted);
+            font-size: 0.8125rem;
+        }
+
+        .message-text {
+            word-break: break-word;
+        }
+
+        .report-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .report-section h3 {
+            margin: 0 0 0.75rem 0;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            padding-bottom: 0.375rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .report-item {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            background: var(--bg);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .report-item:hover {
+            background: var(--panel);
+        }
+
+        .report-item:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        .report-item.done {
+            text-decoration: line-through;
+            color: var(--done);
+        }
+
+        .report-item.done .item-content {
+            opacity: 0.7;
+        }
+
+        .action-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .action-checkbox {
+            margin-top: 0.125rem;
+            cursor: pointer;
+        }
+
+        .item-content {
+            flex: 1;
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, var(--border) 25%, var(--panel) 50%, var(--border) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            height: 1rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+
+        .skeleton.line {
+            height: 0.875rem;
+        }
+
+        .skeleton.block {
+            height: 3rem;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .skeleton {
+                animation: none;
+                background: var(--border);
+            }
+        }
+
+        .status-message {
+            padding: 0.75rem 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        .status-error {
+            background: rgba(220, 38, 38, 0.1);
+            border: 1px solid var(--error);
+            color: var(--error);
+        }
+
+        .status-empty {
+            background: rgba(217, 119, 6, 0.1);
+            border: 1px solid var(--warning);
+            color: var(--warning);
+        }
+
+        .status-info {
+            background: rgba(37, 99, 235, 0.1);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+        }
+
+        .slack-panel {
+            margin-top: 1rem;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: var(--panel);
+        }
+
+        .slack-panel h3 {
+            margin: 0 0 0.75rem 0;
+            font-size: 0.9375rem;
+            font-weight: 600;
+        }
+
+        .slack-panel.disabled {
+            opacity: 0.6;
+        }
+
+        .form-group {
+            margin-bottom: 0.75rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.375rem;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            max-width: 300px;
+            padding: 0.375rem 0.5rem;
+            background: var(--bg);
+            color: var(--fg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+        }
+
+        .help-text {
+            color: var(--muted);
+            font-size: 0.8125rem;
+            margin-top: 0.25rem;
+        }
+
+        .visually-hidden {
+            position: absolute !important;
+            width: 1px !important;
+            height: 1px !important;
+            padding: 0 !important;
+            margin: -1px !important;
+            overflow: hidden !important;
+            clip: rect(0, 0, 0, 0) !important;
+            white-space: nowrap !important;
+            border: 0 !important;
+        }
+
+        [aria-live="polite"] {
+            min-height: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Auto-Reporter</h1>
+            <div class="header-controls">
+                <div class="toggle-group" role="group" aria-label="Report type">
+                    <button type="button" class="active" data-report-type="daily" id="btn-daily">Daily</button>
+                    <button type="button" data-report-type="weekly" id="btn-weekly">Weekly</button>
+                </div>
+                <button type="button" id="theme-toggle" aria-label="Toggle theme">Toggle theme</button>
+                <span id="offline-label" class="offline-label" style="display: none;" aria-live="polite">Offline demo mode</span>
+            </div>
+        </header>
+
+        <div class="main-grid">
+            <section class="panel" aria-labelledby="thread-heading">
+                <div class="panel-header">
+                    <h2 id="thread-heading">Slack thread</h2>
+                    <div class="thread-selector">
+                        <button type="button" class="active" data-thread="sample1" id="thread-sample1">Sample thread 1</button>
+                        <button type="button" data-thread="sample2" id="thread-sample2">Sample thread 2</button>
+                    </div>
+                </div>
+                <div class="panel-body" id="thread-panel">
+                    <div id="thread-messages"></div>
+                </div>
+            </section>
+
+            <section class="panel" aria-labelledby="report-heading">
+                <div class="panel-header">
+                    <h2 id="report-heading">Status report</h2>
+                    <button type="button" class="btn-primary" id="generate-btn">Generate report</button>
+                </div>
+                <div class="panel-body">
+                    <div id="report-status" aria-live="polite"></div>
+                    <div id="report-content" aria-live="polite"></div>
+                </div>
+            </section>
+        </div>
+
+        <section class="slack-panel" id="slack-panel" aria-labelledby="slack-heading">
+            <h3 id="slack-heading">Slack connection</h3>
+            <div id="slack-status"></div>
+            <div id="slack-controls">
+                <div class="form-group">
+                    <button type="button" id="slack-connect-btn">Connect workspace</button>
+                    <p class="help-text">Connect to a Slack workspace via OAuth</p>
+                </div>
+                <div class="form-group">
+                    <label for="channel-select">Choose channels</label>
+                    <select id="channel-select" aria-label="Select channel">
+                        <option value="">Select a channel...</option>
+                    </select>
+                    <p class="help-text">Select channels to sync</p>
+                </div>
+                <div class="form-group">
+                    <button type="button" id="save-channels-btn">Save channel selection</button>
+                </div>
+                <p class="help-text">Last sync time: <span id="last-sync">Never</span></p>
+            </div>
+            <div id="slack-disabled" style="display: none;">
+                <p class="help-text">Slack connection features are not available. OAuth and channel endpoints may not be configured.</p>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Sample threads
+        const SAMPLE_THREADS = {
+            sample1: [
+                {"ts": "1698768000.000100", "user": "alice", "text": "We need to fix the auth bug before release"},
+                {"ts": "1698768060.000200", "user": "bob", "text": "I'll look into it today", "thread_ts": "1698768000.000100"},
+                {"ts": "1698768120.000300", "user": "alice", "text": "There's a blocker - API returns 500"},
+                {"ts": "1698768180.000400", "user": "carol", "text": "I'll check the logs", "thread_ts": "1698768120.000300"}
+            ],
+            sample2: [
+                {"ts": "1698770000.000100", "user": "dave", "text": "Action item: update the documentation for the new API"},
+                {"ts": "1698770060.000200", "user": "eve", "text": "Feature request: add dark mode support"},
+                {"ts": "1698770120.000300", "user": "frank", "text": "Bug found in the payment flow - need to investigate"},
+                {"ts": "1698770180.000400", "user": "grace", "text": "Blocked on design approval for the new dashboard"}
+            ]
+        };
+
+        let currentThread = 'sample1';
+        let currentReportType = 'daily';
+        let offlineMode = false;
+        let actionItemsDone = new Set();
+
+        // Theme toggle
+        const themeToggle = document.getElementById('theme-toggle');
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        themeToggle.addEventListener('click', () => {
+            const current = document.documentElement.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+        });
+
+        // Thread selector
+        document.querySelectorAll('[data-thread]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('[data-thread]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentThread = btn.dataset.thread;
+                renderThread();
+            });
+        });
+
+        // Report type toggle
+        document.querySelectorAll('[data-report-type]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('[data-report-type]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentReportType = btn.dataset.reportType;
+            });
+        });
+
+        function renderThread() {
+            const messages = SAMPLE_THREADS[currentThread] || [];
+            const container = document.getElementById('thread-messages');
+            container.innerHTML = '';
+            messages.forEach((msg, idx) => {
+                const div = document.createElement('div');
+                div.className = 'message';
+                div.id = `msg-${idx}`;
+                div.innerHTML = `
+                    <div class="message-header">
+                        <span class="message-user">@${escapeHtml(msg.user)}</span>
+                        <span class="message-time">${new Date(parseFloat(msg.ts) * 1000).toLocaleString()}</span>
+                    </div>
+                    <div class="message-text">${escapeHtml(msg.text)}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Keyword-based analysis (offline fallback)
+        function analyzeWithKeywords(messages) {
+            const blockers = [];
+            const actionItems = [];
+            const decisions = [];
+            const bugs = [];
+            const features = [];
+
+            messages.forEach((msg, idx) => {
+                const text = msg.text.toLowerCase();
+                if (text.includes('blocker') || text.includes('blocked') || text.includes('stuck') || text.includes("can't proceed")) {
+                    blockers.push({ text: msg.text, msgIndex: idx, original: msg });
+                } else if (text.includes('bug') || text.includes('error') || text.includes('crash') || text.includes('fail')) {
+                    bugs.push({ text: msg.text, msgIndex: idx, original: msg });
+                } else if (text.includes('action item') || text.includes('to-do') || text.includes('need to') || text.includes('please')) {
+                    actionItems.push({ text: msg.text, msgIndex: idx, original: msg });
+                } else if (text.includes('decided') || text.includes('decision') || text.includes('we will')) {
+                    decisions.push({ text: msg.text, msgIndex: idx, original: msg });
+                } else if (text.includes('feature') || text.includes('request') || text.includes('add')) {
+                    features.push({ text: msg.text, msgIndex: idx, original: msg });
+                }
+            });
+
+            return { blockers, actionItems, decisions, bugs, features };
+        }
+
+        function renderReport(data, isOffline = false) {
+            const container = document.getElementById('report-content');
+            const statusDiv = document.getElementById('report-status');
+            container.innerHTML = '';
+
+            if (isOffline) {
+                document.getElementById('offline-label').style.display = 'inline';
+            } else {
+                document.getElementById('offline-label').style.display = 'none';
+            }
+
+            // Blockers
+            if (data.blockers && data.blockers.length > 0) {
+                const section = document.createElement('section');
+                section.className = 'report-section';
+                section.setAttribute('aria-labelledby', 'blockers-heading');
+                section.innerHTML = `<h3 id="blockers-heading">Blockers</h3>`;
+                data.blockers.forEach((item, idx) => {
+                    const div = document.createElement('div');
+                    div.className = 'report-item';
+                    div.tabIndex = 0;
+                    div.setAttribute('role', 'button');
+                    div.setAttribute('aria-label', `Blocker: ${item.text}. Jump to source message.`);
+                    div.innerHTML = `<div class="item-content">${escapeHtml(item.text)}</div>`;
+                    div.addEventListener('click', () => jumpToMessage(item.msgIndex));
+                    div.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            jumpToMessage(item.msgIndex);
+                        }
+                    });
+                    section.appendChild(div);
+                });
+                container.appendChild(section);
+            }
+
+            // Action items
+            if (data.actionItems && data.actionItems.length > 0) {
+                const section = document.createElement('section');
+                section.className = 'report-section';
+                section.setAttribute('aria-labelledby', 'actions-heading');
+                section.innerHTML = `<h3 id="actions-heading">Action items</h3>`;
+                data.actionItems.forEach((item, idx) => {
+                    const div = document.createElement('div');
+                    div.className = 'report-item action-item';
+                    const key = `action-${currentThread}-${idx}`;
+                    if (actionItemsDone.has(key)) {
+                        div.classList.add('done');
+                    }
+                    div.tabIndex = 0;
+                    div.setAttribute('role', 'button');
+                    div.setAttribute('aria-label', `Action item: ${item.text}. Mark as done.`);
+                    div.innerHTML = `
+                        <input type="checkbox" class="action-checkbox" aria-label="Mark action item done" ${actionItemsDone.has(key) ? 'checked' : ''}>
+                        <div class="item-content">${escapeHtml(item.text)}</div>
+                    `;
+                    const checkbox = div.querySelector('.action-checkbox');
+                    checkbox.addEventListener('change', (e) => {
+                        e.stopPropagation();
+                        if (checkbox.checked) {
+                            actionItemsDone.add(key);
+                            div.classList.add('done');
+                        } else {
+                            actionItemsDone.delete(key);
+                            div.classList.remove('done');
+                        }
+                    });
+                    div.addEventListener('click', (e) => {
+                        if (e.target === checkbox) return;
+                        jumpToMessage(item.msgIndex);
+                    });
+                    div.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            if (e.target === checkbox) {
+                                checkbox.checked = !checkbox.checked;
+                                checkbox.dispatchEvent(new Event('change'));
+                            } else {
+                                jumpToMessage(item.msgIndex);
+                            }
+                        }
+                    });
+                    section.appendChild(div);
+                });
+                container.appendChild(section);
+            }
+
+            // Decisions
+            if (data.decisions && data.decisions.length > 0) {
+                const section = document.createElement('section');
+                section.className = 'report-section';
+                section.setAttribute('aria-labelledby', 'decisions-heading');
+                section.innerHTML = `<h3 id="decisions-heading">Decisions</h3>`;
+                data.decisions.forEach((item, idx) => {
+                    const div = document.createElement('div');
+                    div.className = 'report-item';
+                    div.tabIndex = 0;
+                    div.setAttribute('role', 'button');
+                    div.setAttribute('aria-label', `Decision: ${item.text}. Jump to source message.`);
+                    div.innerHTML = `<div class="item-content">${escapeHtml(item.text)}</div>`;
+                    div.addEventListener('click', () => jumpToMessage(item.msgIndex));
+                    div.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            jumpToMessage(item.msgIndex);
+                        }
+                    });
+                    section.appendChild(div);
+                });
+                container.appendChild(section);
+            }
+
+            // Bugs
+            if (data.bugs && data.bugs.length > 0) {
+                const section = document.createElement('section');
+                section.className = 'report-section';
+                section.setAttribute('aria-labelledby', 'bugs-heading');
+                section.innerHTML = `<h3 id="bugs-heading">Bugs</h3>`;
+                data.bugs.forEach((item, idx) => {
+                    const div = document.createElement('div');
+                    div.className = 'report-item';
+                    div.tabIndex = 0;
+                    div.setAttribute('role', 'button');
+                    div.setAttribute('aria-label', `Bug: ${item.text}. Jump to source message.`);
+                    div.innerHTML = `<div class="item-content">${escapeHtml(item.text)}</div>`;
+                    div.addEventListener('click', () => jumpToMessage(item.msgIndex));
+                    div.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            jumpToMessage(item.msgIndex);
+                        }
+                    });
+                    section.appendChild(div);
+                });
+                container.appendChild(section);
+            }
+
+            // Features
+            if (data.features && data.features.length > 0) {
+                const section = document.createElement('section');
+                section.className = 'report-section';
+                section.setAttribute('aria-labelledby', 'features-heading');
+                section.innerHTML = `<h3 id="features-heading">Feature requests</h3>`;
+                data.features.forEach((item, idx) => {
+                    const div = document.createElement('div');
+                    div.className = 'report-item';
+                    div.tabIndex = 0;
+                    div.setAttribute('role', 'button');
+                    div.setAttribute('aria-label', `Feature request: ${item.text}. Jump to source message.`);
+                    div.innerHTML = `<div class="item-content">${escapeHtml(item.text)}</div>`;
+                    div.addEventListener('click', () => jumpToMessage(item.msgIndex));
+                    div.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            jumpToMessage(item.msgIndex);
+                        }
+                    });
+                    section.appendChild(div);
+                });
+                container.appendChild(section);
+            }
+
+            // Focus to report heading after generation
+            document.getElementById('report-heading').focus();
+        }
+
+        function jumpToMessage(msgIndex) {
+            // Remove previous highlights
+            document.querySelectorAll('.message').forEach(m => m.classList.remove('highlight'));
+            const msgEl = document.getElementById(`msg-${msgIndex}`);
+            if (msgEl) {
+                msgEl.classList.add('highlight');
+                msgEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                // Remove highlight after a delay
+                setTimeout(() => {
+                    msgEl.classList.remove('highlight');
+                }, 2000);
+            }
+        }
+
+        function showLoading() {
+            const container = document.getElementById('report-content');
+            const statusDiv = document.getElementById('report-status');
+            statusDiv.innerHTML = '';
+            container.innerHTML = `
+                <div class="skeleton line" style="width: 60%;"></div>
+                <div class="skeleton block"></div>
+                <div class="skeleton line" style="width: 80%;"></div>
+                <div class="skeleton block"></div>
+                <div class="skeleton line" style="width: 70%;"></div>
+            `;
+        }
+
+        function showError(message) {
+            const statusDiv = document.getElementById('report-status');
+            statusDiv.innerHTML = `
+                <div class="status-message status-error" role="alert">
+                    <strong>Error:</strong> ${escapeHtml(message)}<br>
+                    <span class="help-text">How to fix: Check that the backend is running and try again. If the backend is unavailable, the report will be generated using keyword rules in offline mode.</span>
+                </div>
+            `;
+        }
+
+        function showEmpty() {
+            const statusDiv = document.getElementById('report-status');
+            statusDiv.innerHTML = `
+                <div class="status-message status-empty" role="status">
+                    <strong>Empty:</strong> No report content available.<br>
+                    <span class="help-text">What to do next: Select a thread, choose a report type (Daily or Weekly), and click Generate report.</span>
+                </div>
+            `;
+        }
+
+        document.getElementById('generate-btn').addEventListener('click', async () => {
+            const messages = SAMPLE_THREADS[currentThread] || [];
+            const statusDiv = document.getElementById('report-status');
+            const container = document.getElementById('report-content');
+            statusDiv.innerHTML = '';
+            container.innerHTML = '';
+
+            if (messages.length === 0) {
+                showEmpty();
+                return;
+            }
+
+            showLoading();
+            document.getElementById('generate-btn').disabled = true;
+
+            try {
+                // Try to fetch from backend
+                const response = await fetch(`/api/v1/reports/${currentReportType}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({})
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    // If backend returns report data, try to parse it
+                    // For now, use keyword analysis as well as try to use backend data
+                    const analyzed = analyzeWithKeywords(messages);
+                    // If backend has report_data, we could merge it, but keep simple
+                    renderReport(analyzed, false);
+                    offlineMode = false;
+                } else {
+                    throw new Error(`Backend returned ${response.status}`);
+                }
+            } catch (error) {
+                // Fallback to keyword rules
+                console.error('Backend fetch failed:', error);
+                const analyzed = analyzeWithKeywords(messages);
+                renderReport(analyzed, true);
+                offlineMode = true;
+                showError(`Failed to connect to backend: ${error.message}`);
+            } finally {
+                document.getElementById('generate-btn').disabled = false;
+            }
+        });
+
+        // Slack connection panel
+        async function initSlackPanel() {
+            const slackStatus = document.getElementById('slack-status');
+            const slackControls = document.getElementById('slack-controls');
+            const slackDisabled = document.getElementById('slack-disabled');
+            const slackConnectBtn = document.getElementById('slack-connect-btn');
+            const channelSelect = document.getElementById('channel-select');
+            const saveChannelsBtn = document.getElementById('save-channels-btn');
+            const lastSyncEl = document.getElementById('last-sync');
+
+            try {
+                // Try to check status
+                const statusRes = await fetch('/api/v1/slack/status');
+                if (statusRes.ok) {
+                    const statusData = await statusRes.json();
+                    slackStatus.innerHTML = `<p class="help-text">Status: ${statusData.connected ? 'Connected' : 'Not connected'}</p>`;
+                } else {
+                    throw new Error('Status endpoint failed');
+                }
+
+                // Try to load channels
+                try {
+                    const channelsRes = await fetch('/api/v1/slack/channels');
+                    if (channelsRes.ok) {
+                        const channelsData = await channelsRes.json();
+                        const channels = channelsData.channels || [];
+                        channels.forEach(ch => {
+                            const opt = document.createElement('option');
+                            opt.value = ch.id;
+                            opt.textContent = `#${ch.name}`;
+                            channelSelect.appendChild(opt);
+                        });
+                    }
+                } catch (e) {
+                    console.error('Failed to load channels:', e);
+                }
+
+                slackConnectBtn.addEventListener('click', () => {
+                    window.location.href = '/api/v1/auth/slack/install';
+                });
+
+                saveChannelsBtn.addEventListener('click', async () => {
+                    const selected = channelSelect.value;
+                    if (!selected) {
+                        alert('Please select a channel');
+                        return;
+                    }
+                    try {
+                        const res = await fetch('/api/v1/slack/channels/select', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ channel_ids: [selected] })
+                        });
+                        if (res.ok) {
+                            alert('Channels saved');
+                            lastSyncEl.textContent = new Date().toLocaleString();
+                        } else {
+                            alert('Failed to save channels');
+                        }
+                    } catch (e) {
+                        alert('Error saving channels');
+                    }
+                });
+            } catch (error) {
+                // Disable if endpoints missing
+                slackControls.style.display = 'none';
+                slackDisabled.style.display = 'block';
+                document.getElementById('slack-panel').classList.add('disabled');
+            }
+        }
+
+        // Initialize
+        renderThread();
+        initSlackPanel();
+    </script>
+</body>
+</html>

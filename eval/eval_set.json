@@ -1,0 +1,22 @@
+[
+  {"id": 1, "thread": [{"text": "We need to fix auth bug before release"}], "expected_blockers": ["auth bug"], "expected_action_items": ["fix auth bug"]},
+  {"id": 2, "thread": [{"text": "API returning 500 errors"}], "expected_blockers": ["API 500 errors"], "expected_action_items": []},
+  {"id": 3, "thread": [{"text": "Can someone review PR #123?"}], "expected_blockers": [], "expected_action_items": ["review PR #123"]},
+  {"id": 4, "thread": [{"text": "Database migration failed in staging"}], "expected_blockers": ["Database migration failed"], "expected_action_items": []},
+  {"id": 5, "thread": [{"text": "Need to update docs by Friday"}], "expected_blockers": [], "expected_action_items": ["update docs"]},
+  {"id": 6, "thread": [{"text": "Waiting for design approval"}], "expected_blockers": ["design approval pending"], "expected_action_items": []},
+  {"id": 7, "thread": [{"text": "Deploy blocked until tests pass"}], "expected_blockers": ["tests failing"], "expected_action_items": []},
+  {"id": 8, "thread": [{"text": "John will handle the API integration"}], "expected_blockers": [], "expected_action_items": ["API integration"]},
+  {"id": 9, "thread": [{"text": "CI is broken"}], "expected_blockers": ["CI broken"], "expected_action_items": []},
+  {"id": 10, "thread": [{"text": "Need to merge hotfix ASAP"}], "expected_blockers": [], "expected_action_items": ["merge hotfix"]},
+  {"id": 11, "thread": [{"text": "Performance issue with queries"}], "expected_blockers": ["performance issue"], "expected_action_items": []},
+  {"id": 12, "thread": [{"text": "Sarah to investigate the bug"}], "expected_blockers": [], "expected_action_items": ["investigate bug"]},
+  {"id": 13, "thread": [{"text": "Third-party API down"}], "expected_blockers": ["third-party API down"], "expected_action_items": []},
+  {"id": 14, "thread": [{"text": "Need to update SSL cert"}], "expected_blockers": [], "expected_action_items": ["update SSL cert"]},
+  {"id": 15, "thread": [{"text": "Blocked by security review"}], "expected_blockers": ["security review pending"], "expected_action_items": []},
+  {"id": 16, "thread": [{"text": "Mike will fix the frontend"}], "expected_blockers": [], "expected_action_items": ["fix frontend"]},
+  {"id": 17, "thread": [{"text": "Memory leak in production"}], "expected_blockers": ["memory leak"], "expected_action_items": []},
+  {"id": 18, "thread": [{"text": "Need to backup database before migration"}], "expected_blockers": [], "expected_action_items": ["backup database"]},
+  {"id": 19, "thread": [{"text": "Kubernetes cluster unreachable"}], "expected_blockers": ["cluster unreachable"], "expected_action_items": []},
+  {"id": 20, "thread": [{"text": "Update dependencies to fix vulnerabilities"}], "expected_blockers": [], "expected_action_items": ["update dependencies"]}
+]
