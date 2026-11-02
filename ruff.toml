@@ -1,0 +1,7 @@
+target-version = "py311"
+line-length = 120
+
+[lint]
+# Baseline that catches real defects (undefined names, unused imports, bad
+# syntax) without failing on the older codebase's broader style backlog.
+select = ["E4", "E7", "E9", "F"]

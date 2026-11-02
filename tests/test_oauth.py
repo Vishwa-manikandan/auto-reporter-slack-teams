@@ -1,6 +1,5 @@
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import patch, AsyncMock
 from cryptography.fernet import Fernet
 
 from app.main import app

@@ -1,16 +1,14 @@
 import asyncio
 from datetime import datetime
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 
 from sqlalchemy.orm import Session
 
 from app.models.channel import Channel
 from app.models.message import Message
-from app.models.thread import Thread
 from app.models.sync_state import SyncState
 from app.models.workspace import Workspace
 from app.services.slack_service import SlackService, SlackServiceFactory, SlackRateLimitError, SlackAuthError
-from app.services.encryption_service import EncryptionService
 
 
 class SyncService:
