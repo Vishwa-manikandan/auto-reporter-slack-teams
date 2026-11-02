@@ -10,11 +10,11 @@ uvicorn app.main:app --reload
 # open http://localhost:8000/ui/ and press Generate report
 ```
 
-No Slack app or API key is needed for that demo. With the default `AI_PROVIDER=mock` the report comes from a deterministic rule extractor, and the UI says so in a banner instead of passing the output off as model-written.
+No Slack app or API key is needed for that demo. With the default `AI_PROVIDER=mock` the report comes from a deterministic rule extractor, and the UI and every export say so instead of passing the output off as model-written.
 
 ## Why this exists
 
-Status updates are scattered across long threads, so decisions and blockers get lost between standups. This is for small engineering teams that already talk in Slack and want a report they can verify rather than a summary they have to trust. The difference is that every item carries a confidence score and a source message, the extractor is scored against labelled threads, and the UI records when an item is wrong.
+Status updates are scattered across long threads, so decisions and blockers get lost between standups. This is for small engineering teams that already talk in Slack and want a report they can verify rather than a summary they have to trust. The difference is that every item carries a confidence score (cue strength for rules, model-reported for AI) and a source message, the extractor is scored against labelled threads, and the UI records when an item is wrong.
 
 ## Status
 
@@ -29,6 +29,7 @@ Only features with an automated test or a recorded check are marked Working.
 | Done state, edit, reorder, delete items | Working | [`tests/test_reports_demo.py`](tests/test_reports_demo.py) |
 | Corrections ("Wrong?") | Working | [`tests/test_reports_demo.py`](tests/test_reports_demo.py) |
 | Markdown / Slack / email export | Working | [`tests/test_reports_demo.py`](tests/test_reports_demo.py) |
+| Export provenance and confidence meaning | Working | [`tests/test_reports_demo.py`](tests/test_reports_demo.py) |
 | Web UI at `/ui/` | Partial | Manually checked in Chromium against the live API; no automated browser test |
 | AI providers (Anthropic, Ollama, OpenAI) | Partial | Provider switch and status endpoint exist; only `mock` runs in CI. Ollama was measured separately below |
 | Slack OAuth | Partial | [`tests/test_oauth.py`](tests/test_oauth.py); not verified against a live workspace here |
@@ -95,6 +96,17 @@ Raw results are committed as [`eval/results.json`](eval/results.json) and [`eval
 | `openai` | `AI_API_KEY` | `gpt-4o-mini` | OpenAI or compatible endpoint |
 
 If a cloud provider is selected without `AI_API_KEY`, the app does **not** silently call it and does **not** return empty stub data. It falls back to the rule extractor and reports `provider: "mock"` with the reason. The demo endpoint also falls back to rules if a live call fails, and includes a warning in the response.
+
+## Provenance and confidence
+
+Provenance travels with the report. The rule-based banner says no model was used, and every Markdown, Slack and email export repeats that line instead of dropping it at the clipboard boundary. Model-generated exports name the provider and model.
+
+Confidence has a different meaning per mode:
+
+- **Rules:** cue strength from the matched pattern, adjusted for negation and quoting. It is not a probability.
+- **Model:** the value the model reported. It is not calibrated.
+
+Each exported item that has a confidence score includes it, and the export footer explains which kind it is.
 
 ## Quick start
 
@@ -217,7 +229,7 @@ flowchart LR
 
 - The rule extractor and the AI provider are interchangeable; the report generator records which one produced a report.
 - Reports and items are persisted, so done state, edits and ordering survive a refresh.
-- Exports are rendered from stored items, not from the model response, so what you share matches what you reviewed.
+- Exports are rendered from stored items, not from the model response, so what you share matches what you reviewed; the provenance and confidence note is part of every export.
 
 ## Web UI
 
@@ -228,7 +240,7 @@ The UI at `/ui/` is a single dependency-free HTML file. It supports:
 - editing, reordering and deleting items before sharing;
 - done-state persisted through the API;
 - "Wrong?" corrections stored as evaluation data;
-- Markdown, Slack-message and email exports;
+- Markdown, Slack-message and email exports that carry the provenance line and per-item confidence;
 - posting to Slack once a workspace is connected;
 - a provider footer and an unmissable banner when output is rule-based or offline.
 
@@ -245,7 +257,7 @@ When the backend is unreachable the UI keeps working in an "offline demo" mode a
 ## Testing
 
 ```bash
-python -m pytest -q                 # 69 tests
+python -m pytest -q                 # 71 tests
 python -m ruff check app eval tests # lint baseline
 python eval/run_eval.py --json      # rules evaluation and thresholds
 ```

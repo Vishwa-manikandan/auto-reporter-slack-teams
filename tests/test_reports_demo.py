@@ -190,3 +190,40 @@ def test_slack_post_without_token_explains_the_fix(client):
 def test_demo_requires_messages(client):
     response = client.post("/api/v1/demo/report", json={"messages": []})
     assert response.status_code == 422
+
+def test_exports_carry_provenance_and_confidence_meaning(client):
+    data = create_report(client)
+    for export_format in ("markdown", "slack", "email"):
+        response = client.get(
+            f"/api/v1/reports/{data['report_id']}/export",
+            params={"format": export_format},
+        )
+        assert response.status_code == 200
+        content = response.json()["content"]
+        assert "Rule-based output - no AI model was used" in content
+        assert "cue strength, not probability" in content
+        assert "confidence" in content
+
+
+def test_ai_export_says_confidence_is_model_reported():
+    from types import SimpleNamespace
+
+    from app.services.report_export import render
+
+    report = SimpleNamespace(
+        title="AI report",
+        executive_summary="Summary",
+        ai_provider="anthropic",
+        ai_model="claude-test",
+    )
+    item = SimpleNamespace(
+        category="blocker",
+        description="Blocked on review",
+        assignee=None,
+        done=False,
+        confidence=0.8,
+    )
+    content = render(report, [item], "markdown")
+    assert "Generated with anthropic (claude-test)" in content
+    assert "model-reported" in content
+    assert "80% confidence" in content
