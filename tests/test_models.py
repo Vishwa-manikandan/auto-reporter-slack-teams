@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.db.session import Base
-from app.models import User, Workspace, Channel, Message, Thread, Report, ReportItem, SyncState
+from app.models import User, Workspace, Channel
 
 
 def test_models_creation():

@@ -6,8 +6,20 @@ from app.models.message import Message
 from app.models.thread import Thread
 from app.models.report import Report
 from app.models.report_item import ReportItem
+from app.models.correction import Correction
+from app.models.oauth_state import OAuthState
 from app.models.sync_state import SyncState
 
-__all__ = ["Base", "User", "Workspace", "Channel", "Message", "Thread", "Report", "ReportItem", "SyncState"]
-
-from app.models.oauth_state import OAuthState
+__all__ = [
+    "Base",
+    "User",
+    "Workspace",
+    "Channel",
+    "Message",
+    "Thread",
+    "Report",
+    "ReportItem",
+    "Correction",
+    "OAuthState",
+    "SyncState",
+]

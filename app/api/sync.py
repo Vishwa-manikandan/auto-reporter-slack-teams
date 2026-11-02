@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.services.sync_service import SyncService
 from app.models.channel import Channel
-from app.models.workspace import Workspace
 from app.models.sync_state import SyncState
 
 router = APIRouter()
@@ -17,7 +16,7 @@ async def start_sync(workspace_id: int = None, channel_id: int = None, db: Sessi
         result = await sync_service.incremental_sync(channel_id)
         return result
     if workspace_id:
-        channels = db.query(Channel).filter(Channel.workspace_id == workspace_id, Channel.is_selected == True).all()
+        channels = db.query(Channel).filter(Channel.workspace_id == workspace_id, Channel.is_selected.is_(True)).all()
         results = []
         for ch in channels:
             res = await sync_service.incremental_sync(ch.id)

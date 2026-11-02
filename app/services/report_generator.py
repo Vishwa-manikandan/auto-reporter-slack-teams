@@ -5,8 +5,6 @@ from typing import Any, Dict, List, Optional
 from sqlalchemy.orm import Session
 
 from app.models.message import Message
-from app.models.channel import Channel
-from app.models.workspace import Workspace
 from app.services.ai_provider import AIProviderFactory, AIProviderError
 
 

@@ -1,0 +1,127 @@
+{
+  "cases": 25,
+  "exact_match_cases": 20,
+  "per_category": {
+    "blocker": {
+      "tp": 3,
+      "fp": 0,
+      "fn": 1,
+      "precision": 1.0,
+      "recall": 0.75,
+      "f1": 0.857
+    },
+    "action_item": {
+      "tp": 6,
+      "fp": 0,
+      "fn": 1,
+      "precision": 1.0,
+      "recall": 0.857,
+      "f1": 0.923
+    },
+    "decision": {
+      "tp": 3,
+      "fp": 0,
+      "fn": 1,
+      "precision": 1.0,
+      "recall": 0.75,
+      "f1": 0.857
+    },
+    "bug": {
+      "tp": 2,
+      "fp": 1,
+      "fn": 1,
+      "precision": 0.667,
+      "recall": 0.667,
+      "f1": 0.667
+    },
+    "feature_request": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    }
+  },
+  "micro": {
+    "tp": 15,
+    "fp": 1,
+    "fn": 4,
+    "precision": 0.938,
+    "recall": 0.789,
+    "f1": 0.857
+  },
+  "owners": {
+    "expected": 7,
+    "correct": 6,
+    "accuracy": 0.857
+  },
+  "failures": [
+    {
+      "case": "hard-implicit-blocker",
+      "issues": [
+        {
+          "category": "blocker",
+          "false_positives": [],
+          "false_negatives": [
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "case": "hard-implicit-decision",
+      "issues": [
+        {
+          "category": "decision",
+          "false_positives": [],
+          "false_negatives": [
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "case": "hard-implicit-bug",
+      "issues": [
+        {
+          "category": "bug",
+          "false_positives": [],
+          "false_negatives": [
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "case": "hard-implicit-action",
+      "issues": [
+        {
+          "category": "action_item",
+          "false_positives": [],
+          "false_negatives": [
+            0
+          ]
+        },
+        {
+          "category": "owner",
+          "message_index": 0,
+          "expected": "priya",
+          "predicted": null
+        }
+      ]
+    },
+    {
+      "case": "numeric-false-positive",
+      "issues": [
+        {
+          "category": "bug",
+          "false_positives": [
+            0
+          ],
+          "false_negatives": []
+        }
+      ]
+    }
+  ]
+}

@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from unittest.mock import MagicMock, patch
 
 from app.db.session import Base, engine
-from app.models import User, Workspace, Channel, Message, Thread, Report, ReportItem, SyncState
+from app.models import User
 
 
 def test_sqlite_engine_initialization():

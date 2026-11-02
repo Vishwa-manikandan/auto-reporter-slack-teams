@@ -13,7 +13,6 @@ from app.db.session import get_db
 from app.models.oauth_state import OAuthState
 from app.models.workspace import Workspace
 from app.services.encryption_service import EncryptionService, EncryptionServiceError
-from app.services.slack_service import SlackService
 
 router = APIRouter()
 
@@ -66,7 +65,7 @@ async def slack_callback(
     # Atomic consumption
     result = db.query(OAuthState).filter(
         OAuthState.state_hash == state_hash,
-        OAuthState.used == False,
+        OAuthState.used.is_(False),
         OAuthState.expires_at > now,
     ).update({"used": True})
     if result == 0:
@@ -119,7 +118,7 @@ async def slack_callback(
     try:
         encryption_service = EncryptionService()
         encrypted_token = encryption_service.encrypt(access_token)
-    except EncryptionServiceError as e:
+    except EncryptionServiceError:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Token encryption failed")
 
     try:

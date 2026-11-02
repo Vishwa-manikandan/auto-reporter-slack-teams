@@ -1,22 +1,233 @@
-[
-  {"id": 1, "thread": [{"text": "We need to fix auth bug before release"}], "expected_blockers": ["auth bug"], "expected_action_items": ["fix auth bug"]},
-  {"id": 2, "thread": [{"text": "API returning 500 errors"}], "expected_blockers": ["API 500 errors"], "expected_action_items": []},
-  {"id": 3, "thread": [{"text": "Can someone review PR #123?"}], "expected_blockers": [], "expected_action_items": ["review PR #123"]},
-  {"id": 4, "thread": [{"text": "Database migration failed in staging"}], "expected_blockers": ["Database migration failed"], "expected_action_items": []},
-  {"id": 5, "thread": [{"text": "Need to update docs by Friday"}], "expected_blockers": [], "expected_action_items": ["update docs"]},
-  {"id": 6, "thread": [{"text": "Waiting for design approval"}], "expected_blockers": ["design approval pending"], "expected_action_items": []},
-  {"id": 7, "thread": [{"text": "Deploy blocked until tests pass"}], "expected_blockers": ["tests failing"], "expected_action_items": []},
-  {"id": 8, "thread": [{"text": "John will handle the API integration"}], "expected_blockers": [], "expected_action_items": ["API integration"]},
-  {"id": 9, "thread": [{"text": "CI is broken"}], "expected_blockers": ["CI broken"], "expected_action_items": []},
-  {"id": 10, "thread": [{"text": "Need to merge hotfix ASAP"}], "expected_blockers": [], "expected_action_items": ["merge hotfix"]},
-  {"id": 11, "thread": [{"text": "Performance issue with queries"}], "expected_blockers": ["performance issue"], "expected_action_items": []},
-  {"id": 12, "thread": [{"text": "Sarah to investigate the bug"}], "expected_blockers": [], "expected_action_items": ["investigate bug"]},
-  {"id": 13, "thread": [{"text": "Third-party API down"}], "expected_blockers": ["third-party API down"], "expected_action_items": []},
-  {"id": 14, "thread": [{"text": "Need to update SSL cert"}], "expected_blockers": [], "expected_action_items": ["update SSL cert"]},
-  {"id": 15, "thread": [{"text": "Blocked by security review"}], "expected_blockers": ["security review pending"], "expected_action_items": []},
-  {"id": 16, "thread": [{"text": "Mike will fix the frontend"}], "expected_blockers": [], "expected_action_items": ["fix frontend"]},
-  {"id": 17, "thread": [{"text": "Memory leak in production"}], "expected_blockers": ["memory leak"], "expected_action_items": []},
-  {"id": 18, "thread": [{"text": "Need to backup database before migration"}], "expected_blockers": [], "expected_action_items": ["backup database"]},
-  {"id": 19, "thread": [{"text": "Kubernetes cluster unreachable"}], "expected_blockers": ["cluster unreachable"], "expected_action_items": []},
-  {"id": 20, "thread": [{"text": "Update dependencies to fix vulnerabilities"}], "expected_blockers": [], "expected_action_items": ["update dependencies"]}
-]
+{
+  "version": 2,
+  "description": "Hand-labelled Slack threads for evaluating the deterministic extractor. Labels are per message index. Cases 21-25 are deliberately hard: four implicit items the cue baseline should miss, and one numeric false positive it cannot avoid.",
+  "categories": ["blocker", "action_item", "decision", "bug", "feature_request"],
+  "cases": [
+    {
+      "id": "blocker-explicit",
+      "tags": ["blocker", "owner"],
+      "messages": [
+        {"user": "alice", "text": "We're blocked on the staging deploy until the TLS cert is renewed."},
+        {"user": "sam", "text": "Sam will renew it this morning."}
+      ],
+      "expected": {"blocker": [0], "action_item": [1]},
+      "expected_owners": {"1": "sam"}
+    },
+    {
+      "id": "blocker-negated",
+      "tags": ["negation"],
+      "messages": [
+        {"user": "alice", "text": "The deploy is not blocked anymore - the cert was renewed."}
+      ],
+      "expected": {},
+      "expected_owners": {}
+    },
+    {
+      "id": "blocker-attributed-quote",
+      "tags": ["quote"],
+      "messages": [
+        {"user": "bob", "text": "Alice said: \"the API is blocked\" but that was last week and it is fine now."}
+      ],
+      "expected": {},
+      "expected_owners": {}
+    },
+    {
+      "id": "blocker-blockquote",
+      "tags": ["quote"],
+      "messages": [
+        {"user": "carol", "text": "> we are blocked on infra\nUpdate: infra is healthy, shipping today."}
+      ],
+      "expected": {},
+      "expected_owners": {}
+    },
+    {
+      "id": "blocker-waiting-on",
+      "tags": ["blocker"],
+      "messages": [
+        {"user": "dan", "text": "Still waiting on the security review; nothing else is in the way."}
+      ],
+      "expected": {"blocker": [0]},
+      "expected_owners": {}
+    },
+    {
+      "id": "action-at-mention",
+      "tags": ["action", "owner"],
+      "messages": [
+        {"user": "erin", "text": "Can someone review PR #482? @priya please take a look."}
+      ],
+      "expected": {"action_item": [0]},
+      "expected_owners": {"0": "priya"}
+    },
+    {
+      "id": "action-named-actor",
+      "tags": ["action", "owner"],
+      "messages": [
+        {"user": "frank", "text": "Marcus will update the runbook by Thursday."}
+      ],
+      "expected": {"action_item": [0]},
+      "expected_owners": {"0": "marcus"}
+    },
+    {
+      "id": "action-first-person",
+      "tags": ["action", "owner"],
+      "messages": [
+        {"user": "alice", "text": "I'll rotate the API keys after standup."}
+      ],
+      "expected": {"action_item": [0]},
+      "expected_owners": {"0": "alice"}
+    },
+    {
+      "id": "action-negated",
+      "tags": ["negation"],
+      "messages": [
+        {"user": "grace", "text": "No need to update the docs for this one."}
+      ],
+      "expected": {},
+      "expected_owners": {}
+    },
+    {
+      "id": "decision-decided",
+      "tags": ["decision"],
+      "messages": [
+        {"user": "heidi", "text": "We decided to delay the launch to next Tuesday."}
+      ],
+      "expected": {"decision": [0]},
+      "expected_owners": {}
+    },
+    {
+      "id": "decision-going-with",
+      "tags": ["decision"],
+      "messages": [
+        {"user": "ivan", "text": "Agreed: we're going with Postgres for the new service."}
+      ],
+      "expected": {"decision": [0]},
+      "expected_owners": {}
+    },
+    {
+      "id": "decision-negative",
+      "tags": ["decision", "negation"],
+      "messages": [
+        {"user": "judy", "text": "We will not ship on Friday; the team agreed to move to Monday."}
+      ],
+      "expected": {"decision": [0]},
+      "expected_owners": {}
+    },
+    {
+      "id": "bug-500-errors",
+      "tags": ["bug"],
+      "messages": [
+        {"user": "ken", "text": "Checkout is throwing 500 errors for about 10% of users."}
+      ],
+      "expected": {"bug": [0]},
+      "expected_owners": {}
+    },
+    {
+      "id": "bug-resolved",
+      "tags": ["negation"],
+      "messages": [
+        {"user": "laura", "text": "The auth crash is fixed and deployed to staging."}
+      ],
+      "expected": {},
+      "expected_owners": {}
+    },
+    {
+      "id": "bug-quoted-code",
+      "tags": ["quote"],
+      "messages": [
+        {"user": "mallory", "text": "The alert said `500 Internal Server Error`, but that is from the load test."}
+      ],
+      "expected": {},
+      "expected_owners": {}
+    },
+    {
+      "id": "bug-unblocked-trap",
+      "tags": ["negation"],
+      "messages": [
+        {"user": "niaj", "text": "The payments integration is unblocked now that the sandbox is live."}
+      ],
+      "expected": {},
+      "expected_owners": {}
+    },
+    {
+      "id": "feature-request",
+      "tags": ["feature"],
+      "messages": [
+        {"user": "olivia", "text": "Could we add a dark mode to the dashboard? Would be nice for on-call."}
+      ],
+      "expected": {"feature_request": [0]},
+      "expected_owners": {}
+    },
+    {
+      "id": "feature-negated",
+      "tags": ["negation"],
+      "messages": [
+        {"user": "peggy", "text": "We don't need support for CSV export in this milestone."}
+      ],
+      "expected": {},
+      "expected_owners": {}
+    },
+    {
+      "id": "multi-category",
+      "tags": ["blocker", "action", "bug", "owner"],
+      "messages": [
+        {"user": "quinn", "text": "Blocked by the API key rotation; Dana will rotate it today. We also found a regression in login."}
+      ],
+      "expected": {"blocker": [0], "action_item": [0], "bug": [0]},
+      "expected_owners": {"0": "dana"}
+    },
+    {
+      "id": "action-assigned-to",
+      "tags": ["action", "owner"],
+      "messages": [
+        {"user": "rupert", "text": "Action item: migrate the analytics job - assigned to Priya."}
+      ],
+      "expected": {"action_item": [0]},
+      "expected_owners": {"0": "priya"}
+    },
+    {
+      "id": "hard-implicit-blocker",
+      "tags": ["hard", "blocker"],
+      "messages": [
+        {"user": "sybil", "text": "The vendor hasn't sent the contract yet, so we can't start the migration."}
+      ],
+      "expected": {"blocker": [0]},
+      "expected_owners": {}
+    },
+    {
+      "id": "hard-implicit-decision",
+      "tags": ["hard", "decision"],
+      "messages": [
+        {"user": "trent", "text": "After the call, Postgres it is."}
+      ],
+      "expected": {"decision": [0]},
+      "expected_owners": {}
+    },
+    {
+      "id": "hard-implicit-bug",
+      "tags": ["hard", "bug"],
+      "messages": [
+        {"user": "uma", "text": "Great, the build is red again."}
+      ],
+      "expected": {"bug": [0]},
+      "expected_owners": {}
+    },
+    {
+      "id": "hard-implicit-action",
+      "tags": ["hard", "action"],
+      "messages": [
+        {"user": "victor", "text": "Priya, can you take the analytics migration?"}
+      ],
+      "expected": {"action_item": [0]},
+      "expected_owners": {"0": "priya"}
+    },
+    {
+      "id": "numeric-false-positive",
+      "tags": ["hard", "precision"],
+      "messages": [
+        {"user": "wendy", "text": "We shipped 500 units last quarter."}
+      ],
+      "expected": {},
+      "expected_owners": {}
+    }
+  ]
+}
